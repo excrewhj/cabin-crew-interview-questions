@@ -44,19 +44,175 @@
             max-width: 100%;
             height: auto;
         }
+        #random-question {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        #timer {
+            margin-top: 10px;
+            font-size: 20px;
+            color: red;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">승무원 면접 순발력 키우기</div>
-        <ul class="topic-list">
-            <li>1. 필수 기출 문제</li>
-            <li>2. 돌발질문</li>
-            <li>3. 시사문제</li>
-            <li>4. Word Shooting</li>
-            <li>5. Sentence Shooting</li>
-            <li>6. 그림묘사 <br><img src="placeholder.jpg" alt="Example description"></li>
-        </ul>
+    <div id="main-page">
+        <div class="container">
+            <div class="header">승무원 면접 순발력 키우기</div>
+            <ul class="topic-list">
+                <li onclick="startQuestionSession()">1. 필수 기출 문제</li>
+                <li>2. 돌발질문</li>
+                <li>3. 시사문제</li>
+                <li>4. Word Shooting</li>
+                <li>5. Sentence Shooting</li>
+                <li>6. 그림묘사</li>
+            </ul>
+        </div>
     </div>
+
+    <div id="question-page" style="display: none;">
+        <div class="container">
+            <div id="random-question">질문이 여기에 표시됩니다.</div>
+            <div id="timer">남은 시간: 2:00</div>
+            <button onclick="nextQuestion()">다음 질문</button>
+        </div>
+    </div>
+
+    <div id="end-page" style="display: none;">
+        <div class="container">
+            <div class="header">질문이 모두 끝났습니다!</div>
+            <button onclick="goToMainPage()">다시 주제로 넘어가기</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            "전공소개 해 주세요",
+            "그 전공을 왜 선택했나요?",
+            "승무원과 전공에는 어떤 연관이 있나요?",
+            "본인이 승무원이 된다면, 해당 전공이 어떻게 도움이 된다고 생각하나요?",
+            "전공을 살리지 않는 이유는 뭔가요? (항공과 답변x)",
+            "본인이 항공과라면, 어떻게 승무원에 기여할 수 있나요? (비항공과 답변x)",
+            "휴학 / 졸업 후 공백기가 있네요? 이 때 뭐했나요?",
+            "대학 생활 중에 가장 기억에 남는 활동은 어떤게 있나요?",
+            "지금까지 살면서 후회되는 점은 이야기 해주세요.",
+            "지금 일을 한다면 무엇을 하고, 그걸 왜 관두려고 하는지",
+            "서비스 경험을 하면서 힘들었던 점 이야기 해주세요.",
+            "본인이 다른 지원자보다 이것만큼은 잘한다. 강점이다. 하는 것 이야기해주세요.",
+            "본인의 성격에 대해 이야기 해주세요.",
+            "본인의 단점은 뭔가요?",
+            "승무원에 치명적인 본인의 단점에 대해 이야기 해주세요.",
+            "언제 가장 스트레스를 받나요?",
+            "스트레스를 받으면 어떻게 해소하나요?",
+            "여가시간에 주로 뭐하세요?",
+            "승무원이 되면 체력적으로 힘들텐데, 체력관리 어떻게 하나요?",
+            "롤모델이 누군가요?",
+            "승무원이 되기 위해서 어떤 노력을 했나요?",
+            "첫지원자라면 승무원 준비는 어떻게 했나요?",
+            "재지원자라면 왜 떨어진 것 같나요? 그리고 어떤 점이 달라져서 왔나요?",
+            "서비스란 뭐라고 생각하세요?",
+            "승무원은 어떤 일을 하는 사람인가요?",
+            "승무원이 되면 어떤 승무원이 되고 싶으세요?",
+            "승무원이 되면 어떤 장점이 있을까요?",
+            "승무원이 되면 어떤 단점이 있을까요?",
+            "승무원에게 이것만큼은 꼭 필요하다! 하는 자질/역량은 어떤게 있나요?",
+            "본인이 가진 승무원의 자질 하나 이야기 해주세요.",
+            "승무원으로 일할 때 생각과 다르게 너무 힘들면 어떻게 극복할 건가요?",
+            "본인의 직업관에 대해 말해주세요.",
+            "내가 받아봤던 최고의 서비스 이야기 해주세요.",
+            "내가 받아봤던 최악의 서비스 이야기 해주세요.",
+            "다른 항공사 지원해본적 있나요? 지원해봤으면 왜 우리회사에 오려고 하는지? 지원해본적이 없다면 왜 우리 항공사만 고집하는지 이유를 알려주세요.",
+            "자기소개 해주세요.",
+            "자기소개 + 지원동기 합쳐서 1분안에 말해주세요.",
+            "자신을 한단어로 소개해주세요.",
+            "자신을 색깔에 비유해서 설명해주세요.",
+            "왜 승무원이 되고 싶나요?",
+            "왜 우리 항공사에서 일하고 싶은지?",
+            "우리항공사만의 장점이 뭐라고 생각하세요?",
+            "우리항공사가 가진 단점은 뭘까요? 그러면 그걸 어떻게 개선해야 할지도 말해주세요.",
+            "우리 항공사에 추천하고 싶은 신규 취항지와 그 이유를 말해주세요.",
+            "우리 항공사에 추천하고 싶은 신규 기내서비스 추천해주세요.",
+            "우리 항공사에 추천하고 싶은 신규 기내식 추천해주세요.",
+            "우리 항공사의 모델을 새롭게 뽑는다면 누구를 추천하고 싶은지?",
+            "우리항공사 최근 기사 이야기 해주세요.",
+            "우리회사에 대해 아는 것 하나씩 말해보세요.",
+            "우리 항공사 하면 떠오르는 이미지 이야기 해주세요.",
+            "우리 항공사는 이런 색깔이다. 하는 것 이야기 해주세요.",
+            "우리 항공사 서비스 중 가장 해보고 싶은 것은?",
+            "우리 항공사 유니폼에 대해 어떻게 생각하는지?"
+        ];
+
+        let currentQuestionIndex = 0;
+        let questionCount = 0;
+        const maxQuestions = 5;
+
+        function startQuestionSession() {
+            currentQuestionIndex = Math.floor(Math.random() * questions.length);
+            questionCount = 0;
+            showNextQuestion();
+            document.getElementById("main-page").style.display = "none";
+            document.getElementById("question-page").style.display = "block";
+        }
+
+        function showNextQuestion() {
+            if (questionCount < maxQuestions) {
+                document.getElementById("random-question").textContent = questions[currentQuestionIndex];
+                questionCount++;
+                startTimer();
+            } else {
+                endSession();
+            }
+        }
+
+        function startTimer() {
+            const timerElement = document.getElementById("timer");
+            let timeRemaining = 120;
+
+            const timerInterval = setInterval(() => {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+
+                timerElement.textContent = `남은 시간: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+                timeRemaining--;
+
+                if (timeRemaining < 0) {
+                    clearInterval(timerInterval);
+                    if (questionCount < maxQuestions) {
+                        showNextQuestion();
+                    }
+                }
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex = Math.floor(Math.random() * questions.length);
+            showNextQuestion();
+        }
+
+        function endSession() {
+            document.getElementById("question-page").style.display = "none";
+            document.getElementById("end-page").style.display = "block";
+        }
+
+        function goToMainPage() {
+            document.getElementById("end-page").style.display = "none";
+            document.getElementById("main-page").style.display = "block";
+        }
+    </script>
 </body>
 </html>
+
